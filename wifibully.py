@@ -92,10 +92,10 @@ def initialise_interface():
 		print err
 		sys.exit()
 
-# create a monitoring interface using the specified wlan interface
-def create_monitor_interface():
+# create a monitoring interface using the specified wlan interface, on the specified channel
+def create_monitor_interface(channel):
 	try:
-		p = Popen(['airmon-ng', 'start', args.interface], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+		p = Popen(['airmon-ng', 'start', args.interface, channel], stdin=PIPE, stdout=PIPE, stderr=PIPE)
 	except OSError as e:
 		print e
 		sys.exit()
@@ -112,14 +112,16 @@ if __name__ == "__main__":
 	args = parse_args()
 	print "Bringing up interface \""+args.interface+"\"..."
 	initialise_interface()
-	print "Creating monitoring interface..."
-	mon = create_monitor_interface()
-	if not mon:
-		print "Failed to create monitoring interface!"
-		sys.exit()
+	
 	print "Finding BSSID for \""+args.essid+"\"..."
 	info = get_ap_bssid()
 	if not info:
 		print "Failed to find BSSID for \""+args.essid+"\"! Check that the ESSID is correct and you're in range."
 		sys.exit()
 	print "Found \""+args.essid+"\": BSSID="+info.bssid+", Channel="+str(info.channel)+", Power="+str(info.power)
+	
+	print "Creating monitoring interface..."
+	mon = create_monitor_interface(info.channel)
+	if not mon:
+		print "Failed to create monitoring interface!"
+		sys.exit()
