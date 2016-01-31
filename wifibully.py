@@ -32,7 +32,7 @@ def get_clients(f):
 # find the BSSID of the strongest AP matching the specified ESSID
 def get_ap_bssid():
 	try:
-		p = Popen(['iwlist', args.bssid, 'scan', '|', 'egrep', '\'Address|ESSID|Quality|Channel\''], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+		p = Popen(['iwlist', args.interface, 'scan'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
 	except OSError as e:
 		print e
 		sys.exit()
@@ -91,11 +91,6 @@ def initialise_interface():
 	if p.returncode > 0:
 		print err
 		sys.exit()
-	
-	m = re.search(re.compile("monitor mode enabled on ([^\)]+)"), data)
-	if m:
-		return m.group(1)
-	return None
 
 # create a monitoring interface using the specified wlan interface
 def create_monitor_interface():
@@ -108,6 +103,10 @@ def create_monitor_interface():
 	if p.returncode > 0:
 		print err
 		sys.exit()
+	m = re.search(re.compile("monitor mode enabled on ([^\)]+)"), output)
+	if m:
+		return m.group(1)
+	return None
 
 if __name__ == "__main__":
 	args = parse_args()
@@ -121,5 +120,6 @@ if __name__ == "__main__":
 	print "Finding BSSID for \""+args.essid+"\"..."
 	info = get_ap_bssid()
 	if not info:
-		"Failed to find BSSID for \""+args.essid+"\"!"
+		print "Failed to find BSSID for \""+args.essid+"\"! Check that the ESSID is correct and you're in range."
 		sys.exit()
+	print "Found \""+args.essid+"\": BSSID="+info.bssid+", Channel="+str(info.channel)+", Power="+str(info.power)
