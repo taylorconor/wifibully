@@ -95,7 +95,7 @@ def initialise_interface():
 # create a monitoring interface using the specified wlan interface, on the specified channel
 def create_monitor_interface(channel):
 	try:
-		p = Popen(['airmon-ng', 'start', args.interface, channel], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+		p = Popen(['airmon-ng', 'start', args.interface, str(channel)], stdin=PIPE, stdout=PIPE, stderr=PIPE)
 	except OSError as e:
 		print e
 		sys.exit()
