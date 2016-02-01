@@ -5,6 +5,7 @@ from subprocess import Popen, PIPE
 import csv
 import re
 import sys
+import time
 
 args = None
 
@@ -108,6 +109,17 @@ def create_monitor_interface(channel):
 		return m.group(1)
 	return None
 
+# start (and detach from) the airodump process. it will regularly write its output to a csv file in /tmp/output
+def start_airodump(iface, channel, bssid):
+	ts = str(int(time.time()))
+	try:
+		p = Popen(['airodump-ng', iface, '-c', channel, '--bssid', bssid, '-w', '/tmp/airodump-output'+ts, '-o', 'csv'], 
+					stdout=PIPE, stdin=PIPE, stderr=PIPE)
+	except OSError as e:
+		print e
+		sys.exit()
+	return p.pid, 'tmp/output'+ts
+
 if __name__ == "__main__":
 	args = parse_args()
 	print "Bringing up interface \""+args.interface+"\"..."
@@ -127,3 +139,8 @@ if __name__ == "__main__":
 		print "Failed to create monitoring interface!"
 		sys.exit()
 	print "> Created monitoring interface "+mon
+
+	print "Spawning airodump process..."
+	pid,output = start_airodump(mon, info.channel, info.bssid)
+	print "> airodump pid="+str(pid)+", writing to "+output+"-01.csv"
+	
