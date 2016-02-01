@@ -113,12 +113,12 @@ def create_monitor_interface(channel):
 def start_airodump(iface, channel, bssid):
 	ts = str(int(time.time()))
 	try:
-		p = Popen(['airodump-ng', iface, '-c', channel, '--bssid', bssid, '-w', '/tmp/airodump-output'+ts, '-o', 'csv'], 
+		p = Popen(['airodump-ng', iface, '-c', str(channel), '--bssid', bssid, '-w', '/tmp/airodump-output'+ts, '-o', 'csv'], 
 					stdout=PIPE, stdin=PIPE, stderr=PIPE)
 	except OSError as e:
 		print e
 		sys.exit()
-	return p.pid, 'tmp/output'+ts
+	return p.pid, '/tmp/airodump-output'+ts+'-01.csv'
 
 if __name__ == "__main__":
 	args = parse_args()
@@ -142,5 +142,5 @@ if __name__ == "__main__":
 
 	print "Spawning airodump process..."
 	pid,output = start_airodump(mon, info.channel, info.bssid)
-	print "> airodump pid="+str(pid)+", writing to "+output+"-01.csv"
+	print "> airodump pid="+str(pid)+", writing to "+output
 	
