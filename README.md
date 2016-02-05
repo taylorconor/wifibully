@@ -7,7 +7,7 @@ This project was inspired by the frustration of captive portals causing bottlene
 `python -i [Interface] -e [ESSID] -w [Whitelist]`
 
 e.g:
-`python -i wlan0 -e public-wifi -w <my mac address>`
+`python wifibully.py -i wlan0 -e public-wifi -w <my mac address>`
 This will deathenticate every client on the network `public-wifi`, except those specified in the whitelist.
 
 ## Dependencies
